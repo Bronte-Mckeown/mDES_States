@@ -1,0 +1,276 @@
+"x3 mixed LMs (IVs = which map +age + gender + movement) to compare
+target and non-target maps along each gradient
+"
+####################### Load libraries #########################################
+
+library(emmeans) # saving predicted values for graphs and post-hoc contrasts
+library(data.table) # data manipulation
+library(ggthemes) # formatting graphs
+library(ggpubr) # formatting graphs
+library(patchwork) # putting plots together in one figure
+library(report) # use to get written summary of results if required
+library(sjPlot) # creating supplementary tables
+library(effectsize)# calculate standardized parameters for models if required
+library(dplyr)# data manipulation
+library(interactions)# easy-view of interactions
+library(performance) # diagnostics
+library(lme4) # lmer
+library(DescTools) # for R-to-Z Fishers transform
+library(easystats) # for bootstrapping
+library(rstatix) # for neatening tables
+
+########################## Read in data ########################################
+#set current working directory
+setwd("C:\\Users\\bront\\Documents\\CanadaPostdoc\\GradientSpace\\data")
+
+#read in csv file
+df1 <- read.csv("deriv\\P1389_avgRun_allCon_gradSimWide_pcaWide_demo.csv", na.strings=c(""," ","NA", "nan"))
+
+######################### Data prep ############################################
+# R-to-Z Fishers transform
+df1$Zgradient1<- FisherZ(df1$gradient1)
+df1$Zgradient2 <- FisherZ(df1$gradient2)
+df1$Zgradient3 <- FisherZ(df1$gradient3)
+
+# select 'up' target and non-target contrast maps only
+df1 <- subset(df1, (cope %in% c('target_up', 'non_target_up')))
+
+## Set fixed factors: Cope 
+df1$cope <- factor(df1$cope, levels = c("non_target_up",
+                                        "target_up"),
+                         ordered = FALSE) #set order to False.
+#to check it's worked, run this command and see print out.
+levels(df1$cope)
+
+# Gender
+df1$Gender <- as.factor(df1$Gender)
+levels(df1$Gender)
+
+# SubjectID (participant)
+df1$SubjectID <- as.factor(df1$SubjectID)
+
+##################### Setting up for linear mixed models #######################
+# set contrasts to contr.sum
+
+options(contrasts = c("contr.sum","contr.poly"))
+options("contrasts")
+
+########################## Saving results ######################################
+# set file name for lmer text output
+fp = "LMM_avgRun_targetVSNonTarget.txt"
+
+# set current directory to results folder
+setwd("C:\\Users\\bront\\Documents\\CanadaPostdoc\\GradientSpace\\results\\scientificreports\\lmm_target_to_nontarget_maps")
+
+results_dir <- "C:\\Users\\bront\\Documents\\CanadaPostdoc\\GradientSpace\\results\\scientificreports\\lmm_target_to_nontarget_maps"
+
+############################# Models ###########################################
+# set up list of dependent variables
+dv <- c("Zgradient1",
+        "Zgradient2",
+        "Zgradient3")
+
+# set col index for creating bootstrap tables in loop below
+col_index <- c(2,3,4)
+
+# first run all 3 models without lmertest and use bootstrapping to calcualte
+# parameter estimates
+for(i in 1:length(dv)){
+  model <- paste("model",i, sep="") # create model name
+  
+  # run model
+  m <- lmer(as.formula(paste(dv[i],"~ cope + Gender +  Age + MeanMovement+
+                             (1|SubjectID)")),
+            data=df1)
+  assign(model,m) # assign name to model
+  
+  # using easy stats
+  # bootstrapped parameter estimates
+  paramboot <- paste("paramboot",i, sep="")
+  pb <- bootstrap_parameters(m, iterations = 1000)
+  pb <- as.data.frame(pb)
+  
+  # change decimal places in specific columns + remove leading zeros from p-values
+  pb[, col_index] <- round(pb[, col_index], 2)
+  pb <- p_format(pb, digits = 3,leading.zero = FALSE, trailing.zero = TRUE, accuracy = .001)
+  
+  assign(paramboot, pb)
+  
+}
+
+###########################  Summary tables ####################################
+# combine all normal model's parameter estimates into one table
+# done before using lmertest to prevent conflict with satterthwaite
+myfile2 <- file.path(results_dir,"LMM_avgRun_targetVSNonTarget_summary")
+tab_model(model1,model2,model3, file = myfile2, df.method = "satterthwaite",
+          p.val = "satterthwaite",show.df = FALSE,
+          show.r2 = FALSE,
+          show.stat = TRUE, show.icc = FALSE,
+          show.re.var = TRUE)
+
+# save summary tables for bootstrapped estimates
+boot_list <- list(paramboot1, paramboot2, paramboot3)
+myfile3 <- file.path(results_dir,"LMM_avgRun_targetVSNonTarget_bootstrap")
+tab_dfs(boot_list, file = myfile3, show.rownames = FALSE)
+
+##################### re-run models with lmertest ##############################
+library(lmerTest) # for regular p-values for LMMs (f-tests)
+# globally set lmertest.limit to 114 to calculate df
+# also set to sattherthwaite
+emm_options(lmerTest.limit = 114, lmer.df = "satterthwaite")
+
+# run all 3 models using each DV from list using loop
+for(i in 1:length(dv)){
+  model <- paste("model",i, sep="") # create names of models
+  summ <- paste("summary",i, sep = "") # create names of summaries
+  an <- paste("anova",i, sep = "") #  create names of anovas
+  emmean <- paste("emmean",i, sep = "") # create name of emmeans
+  
+  # run model
+  m <- lmer(as.formula(paste(dv[i],"~ cope +  MeanMovement +
+                                      Gender +  Age +
+                             (1|SubjectID)")),
+            data=df1) 
+  
+  s <- summary(m) # create summary
+  a <- anova(m) # create anova
+  e <- emmeans(m, ~ cope, type = "response")
+  
+  
+  # format anova tables
+  a = subset(a, select = -c(`Sum Sq`,`Mean Sq`) )
+  a = as.data.frame(a)
+  
+  a[, c(2)] <- round(a[, c(2)], 0)
+  
+  a[, c(3)] <- round(a[, c(3)], 2)
+  
+  colnames(a)[4]  <- "p" 
+  
+  a <- p_format(a, digits = 2, leading.zero = FALSE, trailing.zero = TRUE, accuracy = .001)
+  
+  assign(model,m) # assign model to model name
+  assign(summ,s) # assign summary to summary name
+  assign(an, a) # assign anova to anova name
+  assign(emmean, e) #assign emmean to emmean name
+  
+  #save outputs to txt file
+  capture.output(s,file = fp, append = TRUE)
+  cat("\n\n\n", file = fp, append = TRUE)
+  capture.output(a,file = fp, append = TRUE)
+  cat("\n\n\n", file = fp, append = TRUE)
+  capture.output(e,file = fp, append = TRUE)
+  cat("\n\n\n", file = fp, append = TRUE)
+  
+} 
+
+############################ ANOVA tables ######################################
+# save anova tables
+anova_list <- list(anova1, anova2, anova3)
+myfile3 <- file.path(results_dir,"LMM_avgRun_targetVSNonTarget_anovaAll")
+tab_dfs(anova_list, file = myfile3,show.rownames = TRUE)
+
+######################## Probe main effect of 'cope' ###########################
+# create new txt file for post hoc comparisons
+fp2 <- "LMM_avgRun_targetVSNonTarget_posthoc.txt"
+
+# compare copes along each gradient (target + non-target maps)
+cope1.contrasts <- pairs(emmean1, adjust = "bonferroni", infer = TRUE)
+cope1.contrasts
+emmean1
+cope2.contrasts <- pairs(emmean2, adjust = "bonferroni", infer = TRUE)
+cope2.contrasts
+emmean2
+cope3.contrasts <- pairs(emmean3, adjust = "bonferroni", infer = TRUE)
+cope3.contrasts
+emmean3
+
+# save to txt file
+cat("Comparing maps along gradient 1:\n", file = fp2, append = TRUE)
+capture.output(cope1.contrasts,file = fp2, append = TRUE)
+cat("\n\n\n", file = fp2, append = TRUE)
+
+cat("Comparing maps along gradient 2:\n", file = fp2, append = TRUE)
+capture.output(cope2.contrasts,file = fp2, append = TRUE)
+cat("\n\n\n", file = fp2, append = TRUE)
+
+cat("Comparing maps along gradient 3:\n", file = fp2, append = TRUE)
+capture.output(cope3.contrasts,file = fp2, append = TRUE)
+cat("\n\n\n", file = fp2, append = TRUE)
+
+########################## Bar charts ##########################################
+# set up list with names of emmeans (predicted means)
+list <- c("emmean1", "emmean2","emmean3")
+
+fontsize = 6
+
+# function for making plots
+myplot <- function(data, title){
+  # x axis = cope, y axis = emmean, bars = gradient
+  ggplot(summary(data), aes(x = cope, y = emmean)) +
+    theme_light() +
+    geom_bar(stat="identity",width = 0.9/.pt, position="dodge",color = "black" ,size = 0.5/.pt) +
+    ylim(-.3, .3)+
+    theme(axis.text.y = element_text(size = fontsize,color = "black"),
+          axis.text.x=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y = element_blank(),
+          axis.ticks.x = element_blank(),
+          plot.margin = margin(0, 0, 0, 0, "cm"))+
+    # add error bars
+    geom_errorbar(position=position_dodge(.6/.pt),width=0.25/.pt,size = 0.5/.pt, 
+                  aes(ymax=upper.CL, ymin=lower.CL),alpha=1)
+}
+
+# call function for list of emmeans set above and store each one (bar1, bar2 etc)
+for(i in seq_along(list)){
+  bar <- paste("bar",i, sep="")
+  b <- myplot(get(list[i]), titles[i])
+  assign(bar, b)
+}
+
+# add x-axis labels to bar3
+cope.labs <- c("Vigilance", "Target Detection")
+bar3 <- bar3 + theme(axis.text.x=element_text(size = fontsize, color = "black"))+
+  scale_x_discrete(labels= cope.labs)+
+  theme(plot.margin = margin(0, 0, 0.5, 0, "cm"),
+        axis.ticks.length.x = unit(3/.pt, "pt"),
+        axis.ticks.x = element_line(linewidth = 1.5/.pt ))
+
+
+# put together
+targetnontarget_bar_plots <- (bar1)/(bar2)/(bar3)&
+  geom_hline(yintercept = 0, size = 0.2/.pt)
+targetnontarget_bar_plots 
+
+# save plot 3 as tiff
+ggsave(
+  "LMM_avgRun_targetVSNonTarget_barchart.tiff",
+  targetnontarget_bar_plots, units = "cm",
+  width = 5,
+  height = 5,
+  dpi = 1000, 
+)
+
+############################# Assumptions ######################################
+models = c(model1, model2, model3)
+#QQ plots
+for (i in seq_along(models)) {
+  jpeg(paste("qq_plot", i, ".png", sep = ""))
+  qq <- qqnorm(resid(models[[i]]))
+  dev.off()
+}
+
+#histograms
+for (i in seq_along(models)) {
+  jpeg(paste("hist_plot", i, ".png", sep = ""))
+  hist <- hist(resid(models[[i]]))
+  dev.off()
+}
+
+#residual plots
+for (i in seq_along(models)) {
+  jpeg(paste("fitted_residual_plot", i, ".png", sep = ""))
+  fitted.resid <- plot(fitted(models[[i]]),resid(models[[i]]),xlim=c(-0.5,0.5), ylim=c(-0.5,0.5))
+  dev.off()
+}
