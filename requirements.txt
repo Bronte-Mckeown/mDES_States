@@ -1,0 +1,5 @@
+/home/b/blam500/Documents/repos/StateSpace
+pandas
+numpy
+matplotlib
+git+https://github.com/Bronte-Mckeown/ThoughtSpace@class-version
