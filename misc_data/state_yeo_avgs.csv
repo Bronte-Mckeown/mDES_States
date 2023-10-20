@@ -1,0 +1,36 @@
+state,yeo_network,mean_value
+nontarget_group,Visuospatial,0.27808195
+nontarget_group,Somatomotor,0.8944837
+nontarget_group,Dorsal Attention,-3.6661396
+nontarget_group,Ventral Attention,0.50682515
+nontarget_group,Limbic,1.9621013
+nontarget_group,Frontoparietal,-1.195533
+nontarget_group,Default Mode,3.0615
+pca1_group,Visuospatial,1.1820192
+pca1_group,Somatomotor,1.1034666
+pca1_group,Dorsal Attention,0.67710066
+pca1_group,Ventral Attention,0.18379511
+pca1_group,Limbic,0.5110138
+pca1_group,Frontoparietal,0.43219516
+pca1_group,Default Mode,1.0170379
+pca2_group,Visuospatial,-0.408973
+pca2_group,Somatomotor,-0.2069874
+pca2_group,Dorsal Attention,0.37574
+pca2_group,Ventral Attention,0.09284338
+pca2_group,Limbic,-0.25666764
+pca2_group,Frontoparietal,-0.091603175
+pca2_group,Default Mode,-0.94153047
+pca3_group,Visuospatial,0.23641852
+pca3_group,Somatomotor,0.34820527
+pca3_group,Dorsal Attention,0.5622036
+pca3_group,Ventral Attention,-0.18765032
+pca3_group,Limbic,-0.08630798
+pca3_group,Frontoparietal,0.024429474
+pca3_group,Default Mode,-0.4226747
+target_group,Visuospatial,-1.1023331
+target_group,Somatomotor,0.6535688
+target_group,Dorsal Attention,-1.9203366
+target_group,Ventral Attention,4.446613
+target_group,Limbic,0.87735605
+target_group,Frontoparietal,1.2355378
+target_group,Default Mode,1.2522861

@@ -4,6 +4,9 @@
 Created on Wed Sep 13 20:27:28 2023
 
 @author: blam500
+
+This script wrangles state space coordinates (1st revision)
+
 """
 import pandas as pd
 import glob

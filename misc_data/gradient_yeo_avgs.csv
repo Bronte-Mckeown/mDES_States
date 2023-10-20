@@ -1,0 +1,36 @@
+gradient,yeo_network,zmean_value
+gradient1,Visuospatial,-0.9622381
+gradient1,Somatomotor,-1.2787447
+gradient1,Dorsal Attention,-0.52182865
+gradient1,Ventral Attention,-0.5544512
+gradient1,Limbic,0.9436357
+gradient1,Frontoparietal,0.911415
+gradient1,Default Mode,1.4622117
+gradient2,Visuospatial,2.0880399
+gradient2,Somatomotor,-1.4248682
+gradient2,Dorsal Attention,0.4070921
+gradient2,Ventral Attention,-0.5971669
+gradient2,Limbic,-0.09418083
+gradient2,Frontoparietal,-0.13094139
+gradient2,Default Mode,-0.24797449
+gradient3,Visuospatial,-0.5896137
+gradient3,Somatomotor,-0.89517754
+gradient3,Dorsal Attention,0.89455175
+gradient3,Ventral Attention,1.2092873
+gradient3,Limbic,-0.76793134
+gradient3,Frontoparietal,1.2966555
+gradient3,Default Mode,-1.147772
+gradient4,Visuospatial,1.2780739
+gradient4,Somatomotor,0.13876404
+gradient4,Dorsal Attention,-2.0885625
+gradient4,Ventral Attention,0.7114632
+gradient4,Limbic,-0.08415452
+gradient4,Frontoparietal,-0.46303934
+gradient4,Default Mode,0.5074552
+gradient5,Visuospatial,-1.1833785
+gradient5,Somatomotor,-1.1462401
+gradient5,Dorsal Attention,0.40499884
+gradient5,Ventral Attention,1.4844178
+gradient5,Limbic,0.90538126
+gradient5,Frontoparietal,-0.93626475
+gradient5,Default Mode,0.4710853

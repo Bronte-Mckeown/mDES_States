@@ -1,4 +1,6 @@
-# load libraries
+"This script correlates lab and scanner PCAs with n = 46 sample"
+
+############################# Libraries ########################################
 library(ggplot2) #for plots
 library(plyr) #for data manipulation
 library(tidyverse) #for data manipulation
@@ -12,6 +14,7 @@ setwd("C:\\Users\\bront\\Documents\\CanadaPostdoc\\GradientSpace\\data\\deriv")
 #read in csv file
 df1 <- read.csv("P1389_avgRun_allCon_gradSimPcaWide_demo_acc_n46_Labdata.csv", na.strings=c(""," ","NA", "nan"))
 
+############################ Make plots ########################################
 
 fac1 <- ggplot(df1, aes(y=FAC_1_MEAN, x= SCAN_FAC_1_MEAN)) + geom_point(size = 3) +
   labs(y = "Lab Off-task Thought",
@@ -49,7 +52,7 @@ fac3 <- ggplot(df1, aes(y=FAC_3_MEAN, x= SCAN_FAC_3_MEAN)) + geom_point(size = 3
   geom_smooth(method=lm, color = "black")
 fac3
 
-#add labels for pearson R and p-values to plots
+## add labels for pearson R and p-values to plots
 fac1 <- fac1 +stat_cor(label.x = -2.5, label.y = 2.5, method = "pearson",size=3, p.accuracy = 0.001, r.accuracy = 0.01)
 fac1
 
@@ -63,7 +66,7 @@ fac3
 all_plots_v <- fac1/fac2/fac3
 all_plots_v
 
-# set current directory to results folder
+# set current directory to results folder for saving
 setwd("C:\\Users\\bront\\Documents\\CanadaPostdoc\\GradientSpace\\results")
 
 ggsave(

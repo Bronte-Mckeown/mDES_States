@@ -19,18 +19,3 @@ CorrelateTasksWithGradients.corrInd('gradientmask_cortical_subcortical', 'all',
                                     inputfiles,outputdir,
                                     'cope','R',
                                     corr_method = 'spearman', verbose = 1)
-
-CorrelateTasksWithGradients.corrInd('gradientmask_cortical_subcortical', 'all',
-                                    inputfiles,outputdir,
-                                    'cope','R',
-                                    corr_method = 'pearson', verbose = 1)
-
-CorrelateTasksWithGradients.corrInd('gradientmask_cortical', 'cortical_only',
-                                    inputfiles,outputdir,
-                                    'cope','R',
-                                    corr_method = 'spearman', verbose = 1)
-
-CorrelateTasksWithGradients.corrInd('gradientmask_cortical', 'cortical_only',
-                                    inputfiles,outputdir,
-                                    'cope','R',
-                                    corr_method = 'pearson', verbose = 1)
